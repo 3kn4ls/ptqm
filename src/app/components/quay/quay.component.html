@@ -43,6 +43,33 @@
 </div>
 </div>
 
+
+<div class="layout flex quay-top" style="background-color: #788695;">
+  <div style="width: 47px;"></div>
+  <div class="noray-bar" style="position: relative; height: 24px; width: 100%;">
+    <div *ngFor="let noray of norays" [ngStyle]="getNorayStyle(noray)">
+      <div style="position:relative; bottom: 6px; white-space: nowrap;">
+        <!--{{ noray.name }}-->
+         <svg width="30" height="30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Forma del noray con parte inferior más redondeada -->
+          <path d="M 30 30 
+                  L 70 30 
+                  A 20 20 0 0 1 90 50 
+                  Q 70 90 50 90 
+                  Q 30 90 10 50 
+                  A 20 20 0 0 1 30 30 
+                  Z" 
+                fill="gold" stroke="dimgray" stroke-width="5" />
+          <!-- Texto en el centro -->
+          <text x="50" y="55" font-size="30" text-anchor="middle" fill="black" font-family="Arial" dominant-baseline="middle">{{noray.name}}</text>
+        </svg>
+        
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <div class="layout flex">
   <!-- Etiquetas a la izquierda -->
   <div class="time-labels flex flex-col">
@@ -63,6 +90,9 @@
       }
     </div>
   </div>
+
+
+
 
   <!-- Contenedor del muelle y barcos -->
 <div class="quay-container" [style.height.px]="quayPanelHeight" >

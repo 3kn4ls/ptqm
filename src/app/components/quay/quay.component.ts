@@ -29,6 +29,13 @@ interface Vessel {
   secondaryHeightPercent?: number;
 }
 
+export interface Noray {
+  name: string;       // Nombre visible, ej. "N-12"
+  order: number;      // Para ordenación o identificación
+  position: number;   // Coordenada en metros (0 - quayLength)
+}
+
+
 @Component({
   selector: 'app-quay',
   providers: [provideNativeDateAdapter()],
@@ -55,6 +62,19 @@ public hours: string[] = [];
   screenWidth = document.querySelector('.quay-container')?.clientWidth || 0;
   private dragStartQuayPos = 0;
   private dragStartTb: Date = new Date();
+
+public norays: Noray[] = [
+  { name: 'N-1', order: 1, position: 20 },
+  { name: 'N-2', order: 2, position: 115 },
+  { name: 'N-3', order: 3, position: 350 },
+  { name: 'N-4', order: 4, position: 550 },
+  { name: 'N-5', order: 5, position: 650 },
+  { name: 'N-6', order: 6, position: 700 },
+  { name: 'N-7', order: 7, position: 820 },
+  { name: 'N-8', order: 8, position: 930 },
+  // ... más norays según el muelle
+];
+
 
 public zoomPercent = 100; // 100% = escala base
 
@@ -83,6 +103,17 @@ constructor() {
     this.recalculateVesselPositions();
   }
 
+
+getNorayStyle(noray: Noray): any {
+  const leftPercent = (noray.position / this.quayLength) * 100;
+  return {
+    position: 'absolute',
+    top: '0', // debajo del header
+    left: `${leftPercent}%`,
+    transform: 'translateX(-50%)', // centrar horizontalmente
+    zIndex: 5
+  };
+}
 
   onSyncClick() {
     if (this.range?.value?.start && this.range?.value?.end) {
@@ -137,7 +168,7 @@ generateTimeLabels() {
     baseDate.setMinutes(0, 0, 0); // Esto redondea la hora hacia abajo.
 
     // 3. Crea las variables de fecha secuenciales con 1 hora de diferencia.
-    const oneHour = 3600 * 1000 * 12; // 1 hora en milisegundos para más claridad
+    const oneHour = 3600 * 1000 * 4; // 1 hora en milisegundos para más claridad
     const tb = new Date(baseDate);
     const tw = new Date(tb.getTime() + oneHour);
     const tc = new Date(tw.getTime() + oneHour); // O tb.getTime() + 2 * oneHour
