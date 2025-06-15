@@ -1,0 +1,35 @@
+<div class="header">
+  <h1>{{ appName }}</h1>
+  <div class="controls">
+    From: <input type="datetime-local" [(ngModel)]="from" />
+    To: <input type="datetime-local" [(ngModel)]="to" />
+    <button (click)="simulateVessels()">Cargar</button>
+  </div>
+</div>
+
+<div
+  class="quay-container"
+  [style.height.px]="quayPanelHeight"
+>
+@for (v of vessels; track v.id) {
+  <div
+    class="vessel"
+    [style.top.px]="v.vslTop"
+    [style.left.%]="v.vslLeft"
+    [style.width.px]="v.vslWidth"
+    [style.height.px]="v.vslHeight"
+    cdkDrag  
+    (cdkDragStarted)="onDragStarted($event, v)"
+  (cdkDragEnded)="onDragEnded($event, v)"
+  >
+    <div class="vessel-label">{{ v.name }}</div>
+    <div
+      class="vessel-work"
+      [style.marginTop.px]="v.secondaryVslTop"
+      [style.height.px]="v.secondaryVslHeight"
+    ></div>
+  </div>
+
+}
+
+</div>
