@@ -43,34 +43,44 @@
 </div>
 </div>
 
-<div
-  class="quay-container"
-  [style.height.px]="quayPanelHeight"
->
-@for (v of vessels; track v.id) {
-  <div class="vessel"
-  [style.left.%]="v.vslLeftPercent"
-  [style.width.%]="v.vslWidthPercent"
-  [style.top.%]="v.vslTopPercent"
-  [style.height.%]="v.vslHeightPercent"
-    cdkDrag  
-    (cdkDragStarted)="onDragStarted($event, v)"
-    (cdkDragEnded)="onDragEnded($event, v)"
-  >
-    <div class="vessel-label">{{ v.name }}</div>
-    <div
-      class="vessel-work"
-      [style.marginTop.%]="v.secondaryTopPercent"
-      [style.height.%]="v.secondaryHeightPercent"
-    >
-        {{ v.tb }}<br>
-        {{v.tw}}<br>
-        {{v.tc}}<br>
-        {{v.td}}
-        
-</div>
+<div class="layout flex">
+  <!-- Etiquetas a la izquierda -->
+  <div class="time-labels flex flex-col">
+    <div class="days-column" > <!-- [style.height.px]="quayPanelHeight"-->
+      @for (day of days; track $index) {
+        <div class="day-label" [style.height.px]="ratioPixelHora * 24" >
+            {{ day | date: 'dd MMM' }}
+          </div>
+      }
+      
+    </div>
+    <div class="hours-column" >
+      @for (day of days; track $index) { <!-- [style.height.px]="quayPanelHeight"-->
+        <div *ngFor="let hour of hours" class="hour-label" [style.height.px]="ratioPixelHora">
+        {{ hour }}
+      </div>
+      }
+    </div>
   </div>
 
-}
+  <!-- Contenedor del muelle y barcos -->
+<div class="quay-container" [style.height.px]="quayPanelHeight" >
+  @for (v of vessels; track v.id) {
+    <div class="vessel"
+    [style.left.%]="v.vslLeftPercent"
+    [style.width.%]="v.vslWidthPercent"
+    [style.top.%]="v.vslTopPercent"
+    [style.height.%]="v.vslHeightPercent" cdkDrag (cdkDragStarted)="onDragStarted($event, v)" (cdkDragEnded)="onDragEnded($event, v)">
+      <div class="vessel-label">{{ v.name }}</div>
+      <div class="vessel-work" [style.marginTop.%]="v.secondaryTopPercent" [style.height.%]="v.secondaryHeightPercent" >
+          {{ v.tb }}<br>
+          {{v.tw}}<br>
+          {{v.tc}}<br>
+          {{v.td}}
+          
+      </div>
+    </div>
+  }
+</div>
 
 </div>

@@ -8,6 +8,7 @@ import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
 
 interface Vessel {
   id: string;
@@ -33,12 +34,17 @@ interface Vessel {
   providers: [provideNativeDateAdapter()],
   imports: [
     CdkDrag,
-    MatFormFieldModule, MatDatepickerModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule
+    MatFormFieldModule, MatDatepickerModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule,
+    CommonModule
   ],
   templateUrl: './quay.component.html',
   styleUrls: ['./quay.component.css']
 })
 export class QuayComponent {
+
+public days: Date[] = [];
+public hours: string[] = [];
+
   appName = 'PORT TERMINAL QUAY';
   from: Date;
   to: Date;
@@ -67,7 +73,7 @@ get ratioPixelMetro(): number {
 
 constructor() {
     this.from = this.range.value?.start || new Date('2025-06-15T00:00:00Z');
-    this.to = this.range.value?.end || new Date('2025-06-16T00:00:00Z');
+    this.to = moment(this.range?.value?.end).toDate(); //.add(1, 'day').toDate(); // Añadir un día para incluir el final
 }
 
   ngOnInit() {
@@ -85,18 +91,45 @@ constructor() {
   onSyncClick() {
     if (this.range?.value?.start && this.range?.value?.end) {
       this.from = this.range?.value?.start;
-      this.to = this.range?.value?.end;
+      this.to = moment(this.range?.value?.end).toDate(); //.add(1, 'day').toDate(); // Añadir un día para incluir el final
 
       this.updateRatios();
       this.simulateVessels();
       this.recalculateVesselPositions();
+      this.generateTimeLabels();
     }
   }
 
+
+generateTimeLabels() {
+  this.days = [];
+  this.hours = [];
+
+  const start = new Date(this.from);
+  const end = new Date(this.to);
+
+  // Generar días
+  const day = new Date(start);
+  while (day <= end) {
+    this.days.push(new Date(day));
+    day.setDate(day.getDate() + 1);
+  }
+
+  // Generar horas (de 00:00 a 23:00)
+  for (let h = 0; h < 24; h++) {
+    this.hours.push(h.toString().padStart(2, '0') + ':00');
+  }
+
+  // console.log('Days:', this.days);
+  // console.log('Hours:', this.hours);
+}
+
+  
   updateRatios() {
     this.screenWidth = window.innerWidth;
     // this.ratioPixelMetro = this.screenWidth / this.quayLength;
-    this.quayPanelHeight = this.differenceInHours(this.to, this.from) * this.ratioPixelHora;
+    console.log('QUAY',  this.from, this.to, this.ratioPixelHora, this.differenceInHours(this.to, this.from))
+    this.quayPanelHeight = (24 + this.differenceInHours(this.to, this.from)) * this.ratioPixelHora;
   }
 
   simulateVessels() {
@@ -125,7 +158,7 @@ constructor() {
 
     this.vessels = result;
     this.recalculateVesselPositions();
-    console.log('Vessels simulated:', this.vessels);
+    // console.log('Vessels simulated:', this.vessels);
   }
 
   recalculateVesselPositions() {
