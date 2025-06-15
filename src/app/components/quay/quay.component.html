@@ -46,10 +46,11 @@
 <div class="layout flex">
   <!-- Etiquetas a la izquierda -->
   <div class="time-labels flex flex-col">
-    <div class="days-column" > <!-- [style.height.px]="quayPanelHeight"-->
+    <div class="days-column" [style.height.px]="quayPanelHeight"> <!-- [style.height.px]="quayPanelHeight"-->
       @for (day of days; track $index) {
         <div class="day-label" [style.height.px]="ratioPixelHora * 24" >
-            {{ day | date: 'dd MMM' }}
+            {{ day | date: 'dd' }}<br>
+            {{ day | date: 'MMM' }}
           </div>
       }
       
@@ -72,11 +73,11 @@
     [style.top.%]="v.vslTopPercent"
     [style.height.%]="v.vslHeightPercent" cdkDrag (cdkDragStarted)="onDragStarted($event, v)" (cdkDragEnded)="onDragEnded($event, v)">
       <div class="vessel-label">{{ v.name }}</div>
-      <div class="vessel-work" [style.marginTop.%]="v.secondaryTopPercent" [style.height.%]="v.secondaryHeightPercent" >
-          {{ v.tb }}<br>
-          {{v.tw}}<br>
-          {{v.tc}}<br>
-          {{v.td}}
+      <div class="vessel-work" [style.top.%]="v.secondaryTopPercent" [style.height.%]="v.secondaryHeightPercent" >
+          {{ v.tb | date : 'HH:mm'}}<br>
+          {{v.tw | date : 'HH:mm'}}<br>
+          {{v.tc | date : 'HH:mm'}}<br>
+          {{v.td | date : 'HH:mm'}}
           
       </div>
     </div>
