@@ -5,6 +5,19 @@
     To: <input type="datetime-local" [(ngModel)]="to" />
     <button (click)="simulateVessels()">Cargar</button>
   </div>
+  <div class="zoom-controls">
+  <label>
+    Zoom Vertical (px/hora): 
+    <input type="range" min="5" max="60" [value]="ratioPixelHora" (input)="onZoomVerticalChange($event)">
+    {{ ratioPixelHora }} px/h
+  </label>
+
+  <label>
+    Zoom Horizontal (% escala): 
+    <input type="range" min="50" max="200" [value]="zoomPercent" (input)="onZoomHorizontalChange($event)">
+    {{ zoomPercent }} %
+  </label>
+</div>
 </div>
 
 <div
@@ -12,22 +25,27 @@
   [style.height.px]="quayPanelHeight"
 >
 @for (v of vessels; track v.id) {
-  <div
-    class="vessel"
-    [style.top.px]="v.vslTop"
-    [style.left.%]="v.vslLeft"
-    [style.width.px]="v.vslWidth"
-    [style.height.px]="v.vslHeight"
+  <div class="vessel"
+  [style.left.%]="v.vslLeftPercent"
+  [style.width.%]="v.vslWidthPercent"
+  [style.top.%]="v.vslTopPercent"
+  [style.height.%]="v.vslHeightPercent"
     cdkDrag  
     (cdkDragStarted)="onDragStarted($event, v)"
-  (cdkDragEnded)="onDragEnded($event, v)"
+    (cdkDragEnded)="onDragEnded($event, v)"
   >
     <div class="vessel-label">{{ v.name }}</div>
     <div
       class="vessel-work"
-      [style.marginTop.px]="v.secondaryVslTop"
-      [style.height.px]="v.secondaryVslHeight"
-    ></div>
+      [style.marginTop.%]="v.secondaryTopPercent"
+      [style.height.%]="v.secondaryHeightPercent"
+    >
+        {{ v.tb }}<br>
+        {{v.tw}}<br>
+        {{v.tc}}<br>
+        {{v.td}}
+        
+</div>
   </div>
 
 }

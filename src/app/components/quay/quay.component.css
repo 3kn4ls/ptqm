@@ -46,3 +46,17 @@ body, html {
   background-color: #00cc66;
   width: 100%;
 }
+
+
+
+.zoom-controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.zoom-controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}

@@ -1,4 +1,5 @@
 export interface Vessel {
+  id: string;
   name: string;
   tb: Date;
   tw: Date;
@@ -6,13 +7,16 @@ export interface Vessel {
   td: Date;
   loa: number;
   quayPos: number;
+
+
 }
 
 export interface VesselWithVisuals extends Vessel {
-  vslTop: number;
-  vslLeft: number;
-  vslWidth: number;
-  vslHeight: number;
-  secondaryVslTop: number;
-  secondaryVslHeight: number;
+  // Nuevos campos relativos (%)
+  vslTopPercent?: number;
+  vslHeightPercent?: number;
+  vslLeftPercent?: number;
+  vslWidthPercent?: number;
+  secondaryTopPercent?: number;
+  secondaryHeightPercent?: number;
 }

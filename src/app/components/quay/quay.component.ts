@@ -17,12 +17,13 @@ interface Vessel {
   loa: number;
   quayPos: number;
 
-  vslTop?: number;
-  vslLeft?: number;
-  vslWidth?: number;
-  vslHeight?: number;
-  secondaryVslTop?: number;
-  secondaryVslHeight?: number;
+  // Nuevos campos relativos (%)
+  vslTopPercent?: number;
+  vslHeightPercent?: number;
+  vslLeftPercent?: number;
+  vslWidthPercent?: number;
+  secondaryTopPercent?: number;
+  secondaryHeightPercent?: number;
 }
 
 @Component({
@@ -40,7 +41,7 @@ export class QuayComponent {
   to = new Date('2025-06-18T00:00:00Z');
   vessels: Vessel[] = [];
   quayLength = 1000; // en metros
-  ratioPixelMetro = 1;
+  // ratioPixelMetro = 1;
   ratioPixelHora = 20; // px/hora
   quayPanelHeight = 0;
   screenWidth = window.innerWidth;
@@ -53,6 +54,12 @@ export class QuayComponent {
 private dragStartTopPx = 0;
 private dragStartQuayPos = 0;
 private dragStartTb: Date = new Date();
+
+public zoomPercent = 100; // 100% = escala base
+
+get ratioPixelMetro(): number {
+  return (this.screenWidth * this.zoomPercent / 100) / this.quayLength;
+}
 
 
   ngOnInit() {
@@ -70,7 +77,7 @@ private dragStartTb: Date = new Date();
 
   updateRatios() {
     this.screenWidth = window.innerWidth;
-    this.ratioPixelMetro = this.screenWidth / this.quayLength;
+    // this.ratioPixelMetro = this.screenWidth / this.quayLength;
     this.quayPanelHeight = this.differenceInHours(this.to, this.from) * this.ratioPixelHora;
   }
 
@@ -103,21 +110,32 @@ private dragStartTb: Date = new Date();
     console.log('Vessels simulated:', this.vessels);
   }
 
-  recalculateVesselPositions() {
-    for (const vessel of this.vessels) {
-      const hoursFromStart = this.differenceInHours(vessel.tb, this.from);
-      const hoursToEnd = this.differenceInHours(vessel.td, vessel.tb);
-      const workStart = this.differenceInHours(vessel.tw, vessel.tb);
-      const workDuration = this.differenceInHours(vessel.tc, vessel.tw);
+recalculateVesselPositions() {
+  const totalTimeMs = this.to.getTime() - this.from.getTime();
 
-      vessel.vslTop = hoursFromStart * this.ratioPixelHora;
-      vessel.vslLeft = (vessel.quayPos / this.quayLength) * 100;
-      vessel.vslWidth = vessel.loa * this.ratioPixelMetro;
-      vessel.vslHeight = hoursToEnd * this.ratioPixelHora;
-      vessel.secondaryVslTop = workStart * this.ratioPixelHora;
-      vessel.secondaryVslHeight = workDuration * this.ratioPixelHora;
-    }
-  }
+  this.vessels.forEach(v => {
+    const tbOffsetMs = v.tb.getTime() - this.from.getTime();
+    const tdOffsetMs = v.td.getTime() - this.from.getTime();
+    const durationMs = v.td.getTime() - v.tb.getTime();
+
+    // Porcentajes verticales
+    v.vslTopPercent = (tbOffsetMs / totalTimeMs) * 100;
+    v.vslHeightPercent = (durationMs / totalTimeMs) * 100;
+
+    // Porcentajes horizontales
+    v.vslLeftPercent = (v.quayPos / this.quayLength) * 100;
+    v.vslWidthPercent = (v.loa / this.quayLength) * 100;
+
+    // Trabajo (interior)
+    const twOffsetMs = v.tw.getTime() - v.tb.getTime();
+    const tcOffsetMs = v.tc.getTime() - v.tb.getTime();
+    const workDurationMs = v.tc.getTime() - v.tw.getTime();
+
+    v.secondaryTopPercent = (twOffsetMs / durationMs) * 100;
+    v.secondaryHeightPercent = (workDurationMs / durationMs) * 100;
+  });
+}
+
 
   differenceInHours(date1: Date, date2: Date): number {
     return moment(date1).diff(moment(date2), 'hours');
@@ -126,7 +144,6 @@ private dragStartTb: Date = new Date();
   
 
 onDragStarted(_: CdkDragStart, vessel: Vessel) {
-  this.dragStartTopPx = vessel.vslTop ?? 0;
   this.dragStartTb = new Date(vessel.tb);
   this.dragStartQuayPos = vessel.quayPos;
 }
@@ -135,28 +152,44 @@ onDragEnded(event: CdkDragEnd, vessel: Vessel) {
   const deltaY = event.distance.y;
   const deltaX = event.distance.x;
 
-  // ➕ Desplazamiento vertical: ajusta fecha tb
+  // Calcular desplazamiento vertical → cambio de tiempo
   const deltaHoras = deltaY / this.ratioPixelHora;
   const newTb = new Date(this.dragStartTb.getTime() + deltaHoras * 3600 * 1000);
 
-  // ➕ Desplazamiento horizontal: ajusta posición en muelle
-  const deltaPorcentaje = (deltaX / this.screenWidth);
+  // Calcular desplazamiento horizontal → cambio de posición en muelle
+  const realScreenWidth = this.screenWidth * this.zoomPercent / 100;
+  const deltaPorcentaje = deltaX / realScreenWidth;
   const deltaMetros = deltaPorcentaje * this.quayLength;
   const newQuayPos = this.dragStartQuayPos + deltaMetros;
 
-  // Duraciones relativas
+  // Mantener duraciones relativas
   const durTw = vessel.tw.getTime() - vessel.tb.getTime();
   const durTc = vessel.tc.getTime() - vessel.tb.getTime();
   const durTd = vessel.td.getTime() - vessel.tb.getTime();
 
+  // Asignar nuevas fechas y posición
   vessel.tb = newTb;
   vessel.tw = new Date(newTb.getTime() + durTw);
   vessel.tc = new Date(newTb.getTime() + durTc);
   vessel.td = new Date(newTb.getTime() + durTd);
-  vessel.quayPos = Math.max(0, Math.min(this.quayLength - vessel.loa, newQuayPos)); // límite de muelle
+  vessel.quayPos = Math.max(0, Math.min(this.quayLength - vessel.loa, newQuayPos));
 
+  // Recalcular posiciones relativas
   this.recalculateVesselPositions();
-  event.source._dragRef.reset(); // reinicia transform para evitar acumulación
+
+  // Resetear el transform del div (para evitar acumulación de estilos)
+  event.source._dragRef.reset();
+}
+
+
+onZoomVerticalChange(event: any) {
+  this.ratioPixelHora = Number(event.target.value);
+  this.recalculateVesselPositions();
+}
+
+onZoomHorizontalChange(event: any) {
+  this.zoomPercent = Number(event.target.value);
+  this.recalculateVesselPositions();
 }
 
 }
