@@ -3,10 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { CdkDrag, CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
 import {provideNativeDateAdapter} from '@angular/material/core';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 interface Vessel {
   id: string;
@@ -32,30 +33,26 @@ interface Vessel {
   providers: [provideNativeDateAdapter()],
   imports: [
     CdkDrag,
-    MatFormFieldModule, MatDatepickerModule, FormsModule, ReactiveFormsModule, JsonPipe
+    MatFormFieldModule, MatDatepickerModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule
   ],
   templateUrl: './quay.component.html',
   styleUrls: ['./quay.component.css']
 })
 export class QuayComponent {
   appName = 'PORT TERMINAL QUAY';
-  from = new Date('2025-06-14T00:00:00Z');
-  to = new Date('2025-06-18T00:00:00Z');
+  from: Date;
+  to: Date;
   vessels: Vessel[] = [];
   quayLength = 1000; // en metros
   // ratioPixelMetro = 1;
   ratioPixelHora = 20; // px/hora
   quayPanelHeight = 0;
   screenWidth = window.innerWidth;
-
   private dragStartTop = 0;
   private dragStartLeft = 0;
-
-  
-
-private dragStartTopPx = 0;
-private dragStartQuayPos = 0;
-private dragStartTb: Date = new Date();
+  private dragStartTopPx = 0;
+  private dragStartQuayPos = 0;
+  private dragStartTb: Date = new Date();
 
 public zoomPercent = 100; // 100% = escala base
 
@@ -64,21 +61,36 @@ get ratioPixelMetro(): number {
 }
 
   readonly range = new FormGroup({
-    start: new FormControl<Date | null>(null),
-    end: new FormControl<Date | null>(null),
+    start: new FormControl<Date | null>(new Date('2025-06-15T00:00:00Z')), 
+    end: new FormControl<Date | null>(new Date('2025-06-16T00:00:00Z')),
   });
+
+constructor() {
+    this.from = this.range.value?.start || new Date('2025-06-15T00:00:00Z');
+    this.to = this.range.value?.end || new Date('2025-06-16T00:00:00Z');
+}
 
   ngOnInit() {
     console.log('QuayComponent initialized');
-    this.updateRatios();
-    this.simulateVessels();
-    this.recalculateVesselPositions();
+      this.onSyncClick()
   }
 
   @HostListener('window:resize')
   onResize() {
     this.updateRatios();
     this.recalculateVesselPositions();
+  }
+
+
+  onSyncClick() {
+    if (this.range?.value?.start && this.range?.value?.end) {
+      this.from = this.range?.value?.start;
+      this.to = this.range?.value?.end;
+
+      this.updateRatios();
+      this.simulateVessels();
+      this.recalculateVesselPositions();
+    }
   }
 
   updateRatios() {
