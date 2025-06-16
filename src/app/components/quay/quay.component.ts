@@ -237,6 +237,8 @@ onDragEnded(event: CdkDragEnd, vessel: Vessel) {
   const deltaHoras = deltaY / this.ratioPixelHora;
   const newTb = new Date(this.dragStartTb.getTime() + deltaHoras * 3600 * 1000);
 
+  newTb.setMinutes(0, 0, 0); // Redondear a la hora más cercana
+  
   const realScreenWidth = this.screenWidth * this.zoomPercent / 100;
   const deltaPorcentaje = deltaX / realScreenWidth;
   const deltaMetros = deltaPorcentaje * this.quayLength;
